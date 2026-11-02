@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#000000" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Kol'ko para?" />
+  <title>Kol'ko još imam para?</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <!-- Zaglavlje -->
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-icon" aria-hidden="true">
+          <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="64" height="64" fill="#000000"/>
+            <path d="M16 18C16 14.6863 18.6863 12 22 12H42C45.3137 12 48 14.6863 48 18V22H16V18Z" fill="#10b981"/>
+            <rect x="11" y="20" width="40" height="31" rx="7" fill="#121215" stroke="#ffffff" stroke-width="3.5"/>
+            <rect x="39" y="30.5" width="15" height="10" rx="3.5" fill="#ffffff"/>
+            <circle cx="44" cy="35.5" r="2" fill="#000000"/>
+            <text x="25" y="41.5" fill="#ffffff" font-family="system-ui, sans-serif" font-weight="900" font-size="15" text-anchor="middle">€?</text>
+          </svg>
+        </div>
+        <h1 class="brand-title">Kol'ko još imam para?</h1>
+      </div>
+    </header>
+
+    <main class="app-main">
+      <!-- Gornja kartica za upravljanje razdobljem -->
+      <section class="card period-card">
+        <!-- Prikazuje se kad postoji barem jedno razdoblje i ne kreira se novo -->
+        <div id="periodSelectorContainer" class="hidden">
+          <div class="period-selector-row">
+            <button type="button" id="prevPeriodBtn" class="icon-btn" title="Prethodno razdoblje" aria-label="Prethodno razdoblje">&#9664;</button>
+            <div class="period-select-wrap">
+              <select id="periodSelect" class="period-select" aria-label="Odaberi razdoblje"></select>
+              <div class="period-meta-wrap">
+                <span id="periodMetaText" class="period-meta"></span>
+                <span id="periodLockedBadge" class="locked-badge hidden">Zaključano</span>
+              </div>
+            </div>
+            <button type="button" id="nextPeriodBtn" class="icon-btn" title="Sljedeće razdoblje" aria-label="Sljedeće razdoblje">&#9654;</button>
+          </div>
+
+          <div id="periodActionsRow" class="period-actions-row">
+            <button type="button" id="toggleSettingsBtn" class="btn btn-outline">
+              <span>Uredi razdoblje</span>
+            </button>
+            <button type="button" id="deletePeriodTopBtn" class="btn btn-danger-outline">
+              <span>Obriši razdoblje</span>
+            </button>
+            <button type="button" id="toggleNewPeriodBtn" class="btn btn-light">
+              <span>+ Novo razdoblje</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Prikazuje se kad nema nijednog razdoblja i forma za novo nije otvorena -->
+        <div id="noPeriodsBar" class="no-periods-bar hidden">
+          <p class="no-periods-text">Trenutno nema unesenih budžeta.</p>
+          <button type="button" id="emptyNewPeriodBtn" class="btn btn-light btn-full">
+            <span>+ Novo razdoblje</span>
+          </button>
+        </div>
+
+        <!-- Forma za uređivanje postojećeg razdoblja -->
+        <form id="editPeriodForm" class="collapsible-panel hidden">
+          <div class="panel-header">
+            <span class="panel-title">Uredi razdoblje</span>
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="periodNameInput">Naziv razdoblja</label>
+              <input type="text" id="periodNameInput" placeholder="Naziv razdoblja" required />
+            </div>
+            <div class="form-group">
+              <label for="initialBudgetInput">Početni iznos budžeta (€)</label>
+              <input type="number" id="initialBudgetInput" step="0.01" min="0" inputmode="decimal" placeholder="Iznos" required />
+            </div>
+            <div class="form-row-2">
+              <div class="form-group">
+                <label for="startDateInput">Od datuma</label>
+                <input type="date" id="startDateInput" required />
+              </div>
+              <div class="form-group">
+                <label for="endDateInput">Do datuma</label>
+                <input type="date" id="endDateInput" required />
+              </div>
+            </div>
+            <div class="form-actions">
+              <button type="button" id="cancelEditPeriodBtn" class="btn btn-outline">Odustani</button>
+              <button type="submit" class="btn btn-light">Spremi promjene</button>
+            </div>
+          </div>
+        </form>
+
+        <!-- Forma za kreiranje novog razdoblja (dok je otvorena, prethodni budžet je skriven) -->
+        <form id="newPeriodForm" class="new-period-panel hidden">
+          <div class="panel-header">
+            <span class="panel-title">Novo razdoblje</span>
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="newPeriodName">Naziv razdoblja</label>
+              <input type="text" id="newPeriodName" placeholder="Naziv razdoblja" required />
+            </div>
+            <div class="form-group">
+              <label for="newPeriodBudget">Početni iznos budžeta (€)</label>
+              <input type="number" id="newPeriodBudget" step="0.01" min="0" inputmode="decimal" placeholder="Iznos" required />
+            </div>
+            <div class="form-row-2">
+              <div class="form-group">
+                <label for="newPeriodStart">Od datuma</label>
+                <input type="date" id="newPeriodStart" required />
+              </div>
+              <div class="form-group">
+                <label for="newPeriodEnd">Do datuma</label>
+                <input type="date" id="newPeriodEnd" required />
+              </div>
+            </div>
+            <label id="copyCategoriesRow" class="checkbox-row hidden">
+              <input type="checkbox" id="copyCategoriesCheck" checked />
+              <span>Kopiraj kategorije i zadane iznose iz prethodnog razdoblja</span>
+            </label>
+            <div class="form-actions">
+              <button type="button" id="cancelNewPeriodBtn" class="btn btn-outline">Odustani</button>
+              <button type="submit" class="btn btn-light">Unesi razdoblje</button>
+            </div>
+          </div>
+        </form>
+      </section>
+
+      <!-- Sadržaj aktivnog razdoblja -->
+      <div id="activeBudgetContent" class="budget-content hidden">
+        <!-- 3 Glavne kartice sažetka -->
+        <section class="summary-grid">
+          <div class="summary-card card-remaining">
+            <div class="summary-top">
+              <span class="summary-label">PREOSTALO ZA POTROŠITI</span>
+            </div>
+            <div id="remainingTotalValue" class="summary-value value-large">0,00 €</div>
+            <div class="summary-sub">
+              Potrošeno ukupno: <strong id="spentTotalValue">0,00 €</strong>
+            </div>
+          </div>
+
+          <div class="summary-row-2">
+            <div class="summary-card card-initial">
+              <span class="summary-label">POČETNI IZNOS BUDŽETA</span>
+              <div id="initialBudgetValue" class="summary-value">0,00 €</div>
+            </div>
+
+            <div class="summary-card card-savings">
+              <span class="summary-label">UŠTEDA</span>
+              <div id="savingsValue" class="summary-value">0,00 €</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Sekcija: Dodaj kategoriju (skriveno ako je razdoblje zaključano) -->
+        <section id="addCategorySection" class="categories-section">
+          <div class="section-header">
+            <h2 class="section-title">Dodaj kategoriju:</h2>
+          </div>
+          <form id="addCategoryForm" class="card add-category-card">
+            <div class="compact-input-row">
+              <input type="text" id="newCatName" placeholder="Naziv" required />
+              <input type="number" id="newCatLimit" step="0.01" min="0" inputmode="decimal" placeholder="Iznos" required />
+              <button type="submit" class="btn-plus" title="Dodaj kategoriju" aria-label="Dodaj kategoriju">+</button>
+            </div>
+          </form>
+        </section>
+
+        <!-- Sekcija: Kategorije trošenja i popis -->
+        <section class="categories-section">
+          <div class="section-header">
+            <h2 class="section-title">Kategorije trošenja:</h2>
+            <select id="sortCategoriesSelect" class="sort-select" aria-label="Redoslijed kategorija">
+              <option value="default">Redoslijed</option>
+              <option value="last-spent">Posljednje trošeno</option>
+              <option value="spent-desc">Najviše potrošeno ↓</option>
+              <option value="spent-asc">Najmanje potrošeno ↑</option>
+            </select>
+          </div>
+
+          <div id="categoriesList" class="categories-list"></div>
+        </section>
+
+        <!-- Gumb na samom dnu za završetak aktivnog razdoblja -->
+        <div id="finishPeriodContainer" class="finish-period-wrap">
+          <button type="button" id="finishPeriodBtn" class="btn btn-finish-period">
+            Završi ovo razdoblje
+          </button>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Skočni prozor (modal) za potvrdu brisanja ili završetka razdoblja -->
+  <div id="confirmModalOverlay" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="confirmModalTitle">
+    <div class="modal-card">
+      <h3 id="confirmModalTitle" class="modal-title">Potvrda</h3>
+      <p id="confirmModalMessage" class="modal-message">Jeste li sigurni?</p>
+      <div class="modal-actions">
+        <button type="button" id="confirmModalCancelBtn" class="btn btn-outline">Odustani</button>
+        <button type="button" id="confirmModalConfirmBtn" class="btn btn-danger-solid">Potvrdi</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
